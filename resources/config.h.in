@@ -1,0 +1,3 @@
+
+#cmakedefine  DEFAULT_FONTPATH "@DEFAULT_FONTPATH@"
+#cmakedefine  DEFAULT_OUTPUT "@DEFAULT_OUTPUT@"
