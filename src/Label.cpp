@@ -41,6 +41,18 @@ private:
     std::vector<Rect>  _uv;
 };
 
+struct TextSpaceArray {
+
+    void addSpace(const TextSpace& space)
+    {
+        _maxWidth = std::max(_maxWidth, space.getWidth());
+        _data.push_back(space);
+    }
+
+    float _maxWidth = FLT_MIN;
+    std::vector<TextSpace> _data;
+};
+
 void TextSpace::reset()
 {
     _left = FLT_MAX;
@@ -117,6 +129,9 @@ void TextSpace::inspect(std::ostream &out) const
     }
 }
 
+
+
+
 bool Label::init(const std::string& font, const std::string& text, float fontSize, float outline)
 {
     _ttfFont = new FontFreeType(font, fontSize, outline);
@@ -161,9 +176,12 @@ bool Label::updateContent()
 
     //  std::cout << "Graphics[{";
 
-    std::vector<TextSpace> spaces;
+    TextSpaceArray spaces;
 
     TextSpace space;
+
+    auto kerning = _ttfFont->getHorizontalKerningForUTF32Text(_u32string);
+
 
     for (int i = 0; i < _u32string.size(); i++)
     {
@@ -181,7 +199,7 @@ bool Label::updateContent()
             cursorX = 0;
             if (space.validate())
             {
-                spaces.push_back(space);
+                spaces.addSpace(space);
                 space.reset();
             }
             continue;
@@ -189,6 +207,10 @@ bool Label::updateContent()
 
         letterDef = _fontAtlas->getOrLoad(ch, _ttfFont);
         if (!letterDef) continue;
+
+        if (kerning) {
+            cursorX += kerning->at(i);
+        }
 
         //cursor.fillRect(letterDef->get)
         Rect& rect = letterDef->rect;
@@ -212,9 +234,9 @@ bool Label::updateContent()
 
         space.fillRect(letterRect, letterTexture);
 
-
-
         cursorX += _spaceX + letterDef->xAdvance;
+
+ 
     }
 
 #ifdef ENABLE_INSPECT
@@ -227,47 +249,48 @@ bool Label::updateContent()
 
     if (space.validate())
     {
-        spaces.push_back(space);
+        spaces.addSpace(space);
         space.reset();
     }
 
     std::cout << std::endl;
 
-    float max_width = 0;
-    float max_height = spaces.size() * _lineHeight;
-    for (int i = 0; i < spaces.size(); i++)
-    {
-       auto& s = spaces[i];
-       max_width = std::max(max_width, s.getWidth());
-    }
-
-
+    float max_width = spaces._maxWidth;
+    float max_height = spaces._data.size() * _lineHeight;
+    auto& list = spaces._data;
 
     std::fstream cmdFile;
     std::string filename2 = "C:\\Projects\\freetype-tests\\build\\Debug\\output_draw.txt";
     cmdFile.open(filename2.c_str(), std::fstream::out);
 
     cmdFile << "Graphics[{Texture[img], ";
-    for(int i=0;i<spaces.size();i++)
+
+    Vec2<float> K;
+    Vec2<float> M;
+
+    for(int i=0;i<list.size();i++)
     {
-        auto& s = spaces[i];
+        auto& s = list[i];
         auto c = s.center();
-#if 1
-        Vec2<float> K(0, - max_height / 2 + i * _lineHeight + _lineHeight / 2.0f);
-        Vec2<float> M = K - s.center();
-#else
-        //left
-        //Vec2<float> K(-max_width/2 + s.getWidth() / 2.0f, -max_height / 2 + i * _lineHeight + _lineHeight / 2.0f);
-        //Vec2<float> M = K - s.center();
+        if(_alignH == LabelAlignmentH::CENTER)
+        {
+            K.set(0, - max_height / 2 + i * _lineHeight + _lineHeight / 2.0f);
+            M = K - s.center();
+        }
+        else if (_alignH == LabelAlignmentH::LEFT)
+        {
+            K.set(-max_width/2 + s.getWidth() / 2.0f, -max_height / 2 + i * _lineHeight + _lineHeight / 2.0f);
+            M = K - s.center();
+        }
+        else
+        {
+            K.set(max_width / 2 - s.getWidth() / 2.0f, -max_height / 2 + i * _lineHeight + _lineHeight / 2.0f);
+            M = K - s.center();
+        }
 
-        //right
-        Vec2<float> K(max_width / 2 - s.getWidth() / 2.0f, -max_height / 2 + i * _lineHeight + _lineHeight / 2.0f);
-        Vec2<float> M = K - s.center();
-
-#endif
         s.translate(M.getX(), M.getY());
         s.inspect(cmdFile);
-        if (i != spaces.size() - 1)
+        if (i != list.size() - 1)
         {
             cmdFile << ",";
         }

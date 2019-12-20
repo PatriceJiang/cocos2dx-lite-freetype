@@ -39,6 +39,6 @@ private:
     int         _spaceX     = 0;
     int     _lineHeight     = 0;
     LabelAlignmentV _alignV = LabelAlignmentV::CENTER;
-    LabelAlignmentH _alignH = LabelAlignmentH::CENTER;
+    LabelAlignmentH _alignH = LabelAlignmentH::LEFT;
     bool        _enableKerning = true;
 };

@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     
     //test_font_atlas("abcdefghijklmnopqrst", font_path, output);
 
-    test_label(font_path, "hello\nsdfafsdf\nAB\n3456767454");
+    test_label(font_path, "hello\nsdfafsdf\nABAVAVAVAV\n3456767454");
     
     return 0;
 }
@@ -42,7 +42,8 @@ int main(int argc, char** argv)
 void test_label(const char* font, const char* text)
 {
     Label* label = new Label();
-    label->init(font, text, 180, 0);
+    //label->init(font, text, 180, 0);
+    label->init(font, text, 40, 0);
     delete label;
 }
 
@@ -58,7 +59,7 @@ std::shared_ptr<GlyphBitmap> test_get_glyphbitmap(FontFreeType &font, const char
 
 void test_font_atlas(const std::string& chars, const char *fontFile,  std::string& dir)
 {
-    FontFreeType font(fontFile, 30.0, 0.0);
+    FontFreeType font(fontFile, 20.0, 0.0);
     font.loadFont();
     std::cout << "FontName: " << font.getFontFamily() << std::endl;
 
