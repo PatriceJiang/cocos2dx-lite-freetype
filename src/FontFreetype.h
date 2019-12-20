@@ -30,7 +30,7 @@ public:
     int getFontAscender() const;
     const char* getFontFamily() const;
 
-    std::unique_ptr<GlyphBitmap> getGlyphBitmap(uint64_t ch);
+    std::shared_ptr<GlyphBitmap> getGlyphBitmap(uint64_t ch);
 
 private:
     std::shared_ptr<FontFreeTypeLibrary> _ftLibrary;

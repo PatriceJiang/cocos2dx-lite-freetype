@@ -13,7 +13,7 @@ endif()
 
 set(TEST_NAME app)
 
-set(DEFAULT_FONTPATH "${CMAKE_CURRENT_LIST_DIR}/resources/Abberancy.ttf")
+set(DEFAULT_FONTPATH "${CMAKE_CURRENT_LIST_DIR}/resources/arial.ttf")
 set(DEFAULT_OUTPUT "${CMAKE_BINARY_DIR}/output.tga")
 configure_file(resources/config.h.in ${CMAKE_BINARY_DIR}/config.h )
 
@@ -49,10 +49,22 @@ if(WIN32)
     target_include_directories(${PROJECT_NAME} PUBLIC 
         ${CMAKE_BINARY_DIR}
     )
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        FOLDER "inner"
+    )
+    set_target_properties(freetype PROPERTIES
+        FOLDER "inner"
+    )
 endif()
 
 file(GLOB SRC_LIST src/* utils/*)
-add_executable(${TEST_NAME} tests.cpp
+
+set(TESTS_SOURCE 
+    tests/test_fontatlas.cpp
+)
+
+add_executable(${TEST_NAME} ${TESTS_SOURCE}
     ${SRC_LIST}
 )
 target_link_libraries(${TEST_NAME} freetype)
@@ -61,7 +73,11 @@ target_include_directories(${TEST_NAME} PUBLIC
     utils
     ${CMAKE_BINARY_DIR}
 )
-source_group(main FILES tests.cpp ${CMAKE_BINARY_DIR}/config.h)
+target_compile_definitions(${TEST_NAME} PUBLIC
+    ENABLE_INSPECT
+)
+
+source_group(main FILES ${TESTS_SOURCE} ${CMAKE_BINARY_DIR}/config.h)
 source_group(utils REGULAR_EXPRESSION utils/*)
 source_group(src REGULAR_EXPRESSION src/*)
 
@@ -69,7 +85,6 @@ if(WIN32)
     target_compile_definitions(${TEST_NAME} PUBLIC 
         _CRT_SECURE_NO_WARNINGS
         _SCL_SECURE_NO_WARNINGS
-        WIN32
         _WIN32
         _WINDOWS
     #    _NO_CRT_STDIO_INLINE 

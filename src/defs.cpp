@@ -1,7 +1,10 @@
 #include "defs.h"
 
+#include "Utils.h"
+
 #include <cassert>
 #include <cstdarg>
+#include <iostream>
 
 Rect::Rect(ScalarType x, ScalarType y, ScalarType w, ScalarType h)
     : _origin(x, y), _size(w, h)
@@ -49,7 +52,8 @@ GlyphBitmap::GlyphBitmap(GlyphBitmap&& other) noexcept
     _pixelMode = other._pixelMode;
 }
 
-void GlyphBitmap::inspect() const
+#ifdef ENABLE_INSPECT
+void GlyphBitmap::inspect(std::ostream& out) const
 {
     printf("width: %d\n", _width);
     printf("height: %d\n", _height);
@@ -61,31 +65,9 @@ void GlyphBitmap::inspect() const
         _rect.getSize().asHeight()
     );
 
-    printf("{");
-
-    const int LEFT = 0;
-    const int RIGHT = _width;
-    const int TOP = _height;
-    const int BOTTOM = 0;
-
-    for (int i = BOTTOM; i < TOP; i++)
-    {
-        printf("{");
-        for (int j = LEFT; j < RIGHT; j++)
-        {
-            printf("{%d}", _data[j + i * _width]);
-            if (j != RIGHT - 1)
-            {
-                printf(",");
-            }
-        }
-        printf("}");
-        if (i != TOP - 1) {
-            printf(",");
-        }
-    }
-    printf("};\n");
+    utils::inspectData(out, _width, _height, PixelModeSize(_pixelMode), _data);
 }
+#endif
 
 int PixelModeSize(PixelMode mode)
 {

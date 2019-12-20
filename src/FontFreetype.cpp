@@ -162,7 +162,7 @@ const char* FontFreeType::getFontFamily() const
     return _face->family_name;
 }
 
-std::unique_ptr<GlyphBitmap> FontFreeType::getGlyphBitmap(uint64_t ch)
+std::shared_ptr<GlyphBitmap> FontFreeType::getGlyphBitmap(uint64_t ch)
 {
     if (!_face) return nullptr;
     const auto load_char_flag = FT_LOAD_RENDER | FT_LOAD_NO_AUTOHINT;
@@ -186,5 +186,5 @@ std::unique_ptr<GlyphBitmap> FontFreeType::getGlyphBitmap(uint64_t ch)
     int size = PixelModeSize(mode) * bmWidth * bmHeight;
     std::vector<uint8_t> data((uint8_t*)bitmap.buffer, (uint8_t*)bitmap.buffer + size);
     auto* ret = new GlyphBitmap(std::move(data), bmWidth, bmHeight, Rect(x, y, w, h), adv, mode);
-    return std::unique_ptr<GlyphBitmap>(ret);
+    return std::shared_ptr<GlyphBitmap>(ret);
 }
